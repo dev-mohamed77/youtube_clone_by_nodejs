@@ -1,0 +1,27 @@
+{
+  "name": "youtube_clone_by_nodejs",
+  "version": "1.0.0",
+  "description": "youtube clone by nodejs and postgres sql",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev-mohamed77/youtube_clone_by_nodejs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dev-mohamed77/youtube_clone_by_nodejs/issues"
+  },
+  "homepage": "https://github.com/dev-mohamed77/youtube_clone_by_nodejs#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.19",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.4"
+  }
+}
