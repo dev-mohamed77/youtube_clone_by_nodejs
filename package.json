@@ -20,8 +20,22 @@
   },
   "homepage": "https://github.com/dev-mohamed77/youtube_clone_by_nodejs#readme",
   "devDependencies": {
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.13",
+    "@types/helmet": "^4.0.0",
+    "@types/morgan": "^1.9.3",
+    "@types/pg": "^8.6.5",
+    "@types/winston": "^2.4.4",
     "nodemon": "^2.0.19",
     "ts-node": "^10.9.1",
     "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "helmet": "^5.1.1",
+    "morgan": "^1.10.0",
+    "pg": "^8.7.3",
+    "winston": "^3.8.1"
   }
 }
