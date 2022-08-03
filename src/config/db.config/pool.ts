@@ -6,10 +6,10 @@ const pool = new Pool({
   database: config.db_name,
   port: config.db_port,
   user: config.db_username,
-  password: "vfd" as string,
+  password: config.db_password,
+  connectionTimeoutMillis: 300,
+  max: 4,
 });
-
-console.log(pool);
 
 pool.on("connect", (connect) => {
   console.log("connect" + connect);

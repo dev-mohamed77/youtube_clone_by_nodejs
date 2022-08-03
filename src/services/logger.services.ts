@@ -1,6 +1,6 @@
 import winston from "winston";
-import { currentDate } from "../utils/current_date";
-class Logger {
+import { currentDate } from "../utils/common/current_date";
+export class Logger {
   route: string;
   logger: winston.Logger;
   constructor(route: string) {
