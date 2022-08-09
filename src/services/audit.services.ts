@@ -13,8 +13,8 @@ emitter.on(event_name, async (audit: Audit) => {
   const values = [
     audit.action,
     audit.status,
-    audit.data,
-    audit.error,
+    JSON.stringify(audit.data),
+    JSON.stringify(audit.error),
     audit.audit_by,
     audit.audit_on,
   ];

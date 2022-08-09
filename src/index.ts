@@ -15,7 +15,7 @@ app.use(morgan("dev"));
 
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "30mb" }));
 
 app.use("/api/v1", router);
 

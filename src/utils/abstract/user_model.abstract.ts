@@ -1,4 +1,4 @@
-export abstract class Model<T> {
+export abstract class UserModelStore<T> {
   abstract add_user(params: T, is_password: boolean): Promise<T>;
   abstract getAllUser(): Promise<T[]>;
   abstract get_user_by_id(id: string): Promise<T>;

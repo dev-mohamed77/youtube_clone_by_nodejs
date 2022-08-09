@@ -66,7 +66,7 @@ export const get_user_by_id = async (
   }
 };
 
-export const update_user = async (
+export const update_user_by_id = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -74,8 +74,6 @@ export const update_user = async (
   const fullname = req.body.fullname;
   const image_url = req.body.image_url;
   const gender = req.body.gender;
-  console.log(req.params.id);
-  console.log(req.body.user.id);
 
   if (req.params.id === req.body.user.id) {
     try {
@@ -102,6 +100,40 @@ export const update_user = async (
     }
   } else {
     const message = "You can update only your account!";
+    res.status(400).json({
+      status: false,
+      result: message,
+    });
+  }
+};
+
+export const delete_user_by_id = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.params.id === req.body.user.id) {
+    try {
+      const delete_user = await user_model.delete_user_by_id(req.params.id);
+      console.log(delete_user);
+      res.status(200).json({
+        status: true,
+        result: "User delete successfully",
+      });
+    } catch (err) {
+      next(err);
+      logger.errorWithObject(err.name || "Error delete user by id", err);
+      prepare_audit(
+        audit_action.DELETE_USER_BY_ID,
+        err.httpStatusCode || 500,
+        null,
+        err,
+        "postman",
+        currentDate()
+      );
+    }
+  } else {
+    const message = "You can delete only your account!";
     res.status(400).json({
       status: false,
       result: message,

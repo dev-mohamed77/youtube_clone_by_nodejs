@@ -1,12 +1,12 @@
 import db_connection from "../config/db.config/connection";
-import { Model } from "../utils/abstract/model.abstract";
+import { UserModelStore } from "../utils/abstract/user_model.abstract";
 import { IUser } from "../utils/types/users.types";
 import db_queries from "../config/db.config/queries";
 import { ApiError } from "../services/error_handler";
 import { HttpStatusCode } from "../utils/enum/http_status_code.enum";
 import { currentDate } from "../utils/common/current_date";
 
-class UserModel implements Model<IUser> {
+class UserModel implements UserModelStore<IUser> {
   async add_user(params: IUser, is_password: boolean): Promise<any> {
     try {
       const query = is_password
@@ -108,7 +108,6 @@ class UserModel implements Model<IUser> {
       const values = [username, email];
 
       const result = await db_connection<IUser>(query, values);
-
       return result.rows;
     } catch (err) {
       const message = `This user does not exist`;

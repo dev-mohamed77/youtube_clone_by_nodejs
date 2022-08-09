@@ -1,8 +1,9 @@
 import { Router } from "express";
 import {
+  delete_user_by_id,
   get_all_users,
   get_user_by_id,
-  update_user,
+  update_user_by_id,
 } from "../../../controller/user.controller";
 import { user_valid } from "../../../middleware/jwt.middleware";
 
@@ -10,6 +11,7 @@ const router = Router();
 
 router.get("/", get_all_users);
 router.get("/:id", get_user_by_id);
-router.put("/:id", user_valid, update_user);
+router.put("/:id", user_valid, update_user_by_id);
+router.delete("/:id", user_valid, delete_user_by_id);
 
 export default router;
