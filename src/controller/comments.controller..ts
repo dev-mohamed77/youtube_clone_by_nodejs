@@ -113,7 +113,7 @@ export const get_comment_by_id = async (
 
     res.status(200).json({
       status: true,
-      result: result,
+      result: result[0],
     });
     logger.errorWithObject("get comment by id successfully", result);
     prepare_audit(
