@@ -44,4 +44,13 @@ export default {
   DELETE_DESLIKE: "DELETE FROM deslikes WHERE user_id =$1 AND video_id=$2",
   GET_LIKES_IN_VIDEOS: "SELECT * FROM likes WHERE video_id=$1",
   GET_DESLIKE_IN_VIDEO: "SELECT * FROM deslikes WHERE video_id=$1",
+
+  // comments
+  ADD_COMMENT:
+    "INSERT INTO comments (comments_user_id, comments_videos_id, comments_title, comments_created_at) VALUES ($1, $2, $3, $4) returning *",
+  GET_COMMENT_BY_ID: "SELECT * FROM comments WHERE comments_id=$1",
+  GET_COMMENTS_IN_VIDEO: "SELECT * FROM comments WHERE comments_videos_id=$1",
+  UPDATE_COMMENT_BY_ID:
+    "UPDATE comments SET comments_title=$1, comments_updated_at=$2 WHERE comments_id=$3 returning *",
+  DELETE_COMMENT_BY_ID: "DELETE FROM comments WHERE comments_id=$1",
 };

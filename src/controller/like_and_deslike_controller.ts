@@ -17,16 +17,18 @@ export const add_like = async (
   res: Response,
   next: NextFunction
 ) => {
-  const user_id = req.body.user_id;
   const video_id = req.body.video_id;
 
   try {
-    if (!user_id || !video_id) {
-      const message = "user_id and video_id is required";
+    if (!video_id) {
+      const message = "video_id is required";
       throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
     }
 
-    const add_like_video = await like_model.add_like(user_id, video_id);
+    const add_like_video = await like_model.add_like(
+      req.body.user.id,
+      video_id
+    );
 
     res.status(200).json({
       status: true,
@@ -60,15 +62,17 @@ export const delete_like = async (
   res: Response,
   next: NextFunction
 ) => {
-  const user_id = req.body.user_id;
   const video_id = req.body.video_id;
   try {
-    if (!user_id || !video_id) {
-      const message = "user_id and video_id is required";
+    if (!video_id) {
+      const message = "video_id is required";
       throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
     }
 
-    const delete_like_video = await like_model.delete_like(user_id, video_id);
+    const delete_like_video = await like_model.delete_like(
+      req.body.user.id,
+      video_id
+    );
 
     res.status(200).json({
       status: true,
@@ -105,16 +109,15 @@ export const add_desLike = async (
   res: Response,
   next: NextFunction
 ) => {
-  const user_id = req.body.user_id;
   const video_id = req.body.video_id;
   try {
-    if (!user_id || !video_id) {
-      const message = "user_id and video_id is required";
+    if (!video_id) {
+      const message = "video_id is required";
       throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
     }
 
     const add_desLike_video = await desLike_model.add_desLike(
-      user_id,
+      req.body.user.id,
       video_id
     );
 
@@ -151,16 +154,15 @@ export const delete_desLike = async (
   res: Response,
   next: NextFunction
 ) => {
-  const user_id = req.body.user_id;
   const video_id = req.body.video_id;
   try {
-    if (!user_id || !video_id) {
-      const message = "user_id and video_id is required";
+    if (!video_id) {
+      const message = "video_id is required";
       throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
     }
 
     const delete_desLike_video = await desLike_model.delete_desLike(
-      user_id,
+      req.body.user.id,
       video_id
     );
 
