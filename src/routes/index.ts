@@ -5,6 +5,7 @@ import videos_router from "./api/v1/videos.router";
 import like_router from "./api/v1/like.router";
 import desLike_router from "./api/v1/deslike.router";
 import comments_router from "../routes/api/v1/comments.router";
+import subscribe_router from "../routes/api/v1/subscribe.router";
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use("/videos", videos_router);
 router.use("/comments", comments_router);
 router.use("/likes", like_router);
 router.use("/deslikes", desLike_router);
+router.use("/subscribe", subscribe_router);
 
 export default router;

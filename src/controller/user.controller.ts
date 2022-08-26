@@ -72,8 +72,13 @@ export const update_user_by_id = async (
   next: NextFunction
 ) => {
   const fullname = req.body.fullname;
-  const image_url = req.body.image_url;
   const gender = req.body.gender;
+  const image_url =
+    req.file?.path != null
+      ? "http://127.0.0.1:8800/" + req.file?.path
+      : undefined;
+
+  console.log(req.body);
 
   if (req.params.id === req.body.user.id) {
     try {
@@ -100,6 +105,7 @@ export const update_user_by_id = async (
     }
   } else {
     const message = "You can update only your account!";
+
     res.status(400).json({
       status: false,
       result: message,

@@ -8,10 +8,18 @@ import { ApiError } from "../services/error_handler";
 import { Logger } from "../services/logger.services";
 import { currentDate } from "../utils/common/current_date";
 import { HttpStatusCode } from "../utils/enum/http_status_code.enum";
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegPath from "@ffmpeg-installer/ffmpeg";
+ffmpeg.setFfmpegPath(ffmpegPath.path);
+
+import { getVideoDurationInSeconds } from "get-video-duration";
+import { SubscriberModel } from "../models/subscriber_model";
+import UserModel from "../models/users_model";
 
 const videos = new VideosModel();
 const like_model = new LikeModel();
 const desLike_model = new DesLikeModel();
+const subscriber = new SubscriberModel();
 const logger = new Logger("videos_controller");
 
 //create_videos
@@ -20,21 +28,60 @@ export const create_videos = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { title, description, url, image_url } = req.body;
+  console.log(req.body);
+  const { title, description } = req.body;
+  const video_url =
+    req.file?.path != null ? "http://127.0.0.1:8800/" + req.file?.path : "";
   const created_at = currentDate();
 
   try {
-    if (!title || !description || !url || !image_url) {
-      const message = "title, description, url and image_url are required";
+    if (!title || !description || !req.file?.path) {
+      const message = "title and description is required";
       throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
     }
+
+    let image_path;
+
+    var video_duration = await getVideoDurationInSeconds(req.file?.path);
+
+    // Create thumbnails
+    ffmpeg(req.file?.path)
+      .on("filenames", (filename) => {
+        // Create video thumbnail file name
+        image_path = filename;
+      })
+      .on("end", () => {
+        // Do what to do after creating a thumbnail
+        logger.info("Screenshots taken");
+      })
+      .on("error", (err) => {
+        // Handling when an error occurs
+        throw new ApiError(
+          err.message,
+          HttpStatusCode.BAD_REQUEST,
+          err.message
+        );
+      })
+      .takeScreenshots({
+        count: 1, // 3 images
+        folder: "uploads/thumbnails", // Thumbnail file storage location
+        size: "320x240", // size image
+        filename: "thumbnail-%b.png", // %b => filename
+        timemarks: [10],
+      });
+
+    const video_image =
+      image_path != null
+        ? "http://127.0.0.1:8800/uploads/thumbnails/" + image_path
+        : "";
 
     const create_video = await videos.create_video({
       user_id: req.body.user.id,
       title: title,
       description: description,
-      url: url,
-      image_url: image_url,
+      url: video_url,
+      image_url: video_image,
+      duration: video_duration.toLocaleString(),
       created_at: created_at,
     });
 
@@ -53,11 +100,12 @@ export const create_videos = async (
       created_at
     );
   } catch (err) {
+    console.log(err);
     next(err);
     logger.errorWithObject(err.name || "Error add video", err);
     prepare_audit(
       audit_action.CREATE_VIDEO,
-      err.HttpStatusCode,
+      err.HttpStatusCode ?? 500,
       null,
       err,
       "postman",
@@ -68,12 +116,16 @@ export const create_videos = async (
 
 // get videos
 export const get_videos = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const pages = Number(req.query.pages);
+  const limit = Number(req.query.limit);
+
   try {
-    const result = await videos.get_videos();
+    const result = await videos.get_videos(limit, pages);
+
     res.status(200).json({
       status: true,
       result: result,
@@ -92,7 +144,7 @@ export const get_videos = async (
     logger.errorWithObject(err.name || "Error get video", err);
     prepare_audit(
       audit_action.GET_VIDEOS,
-      err.HttpStatusCode,
+      err.HttpStatusCode ?? 500,
       null,
       err,
       "postman",
@@ -103,12 +155,19 @@ export const get_videos = async (
 
 // get videos random
 export const get_videos_random = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const pages = Number(req.query.pages);
+  const limit = Number(req.query.limit);
+
   try {
-    const result = await videos.get_all_videos_random();
+    if (!pages || !limit) {
+      const message = "pages and limit query is required";
+      throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
+    }
+    const result = await videos.get_all_videos_random(limit, pages);
     res.status(200).json({
       status: true,
       result: result,
@@ -127,7 +186,7 @@ export const get_videos_random = async (
     logger.errorWithObject(err.name || "Error get video random", err);
     prepare_audit(
       audit_action.GET_VIDEOS,
-      err.HttpStatusCode,
+      err.HttpStatusCode ?? 500,
       null,
       err,
       "postman",
@@ -344,22 +403,24 @@ export const add_view = async (
 
 // trend videos
 export const trend = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const pages = Number(req.query.pages);
+  const limit = Number(req.query.limit);
   try {
-    const trend = await videos.trend();
+    const trend_video = await videos.trend(limit, pages);
 
     res.status(200).json({
       status: true,
-      result: trend,
+      result: trend_video,
     });
-    logger.infoWithObject("Trend videos successfully", trend);
+    logger.infoWithObject("Trend videos successfully", trend_video);
     prepare_audit(
       audit_action.TREND_VIDEOS,
       200,
-      trend,
+      trend_video,
       null,
       "postman",
       currentDate()
@@ -379,4 +440,50 @@ export const trend = async (
 };
 
 // sub
-export const sub = (req: Request, res: Response, next: NextFunction) => {};
+export const sub = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user_result = await subscriber.GET_SUBSCRIPTION_WITH_ID(
+      req.body.user.id
+    );
+
+    const video_result = await Promise.all(
+      user_result.map((user) => {
+        return videos.sub(user.subscriber_user_from.user_id);
+      })
+    );
+
+    res.status(200).json({
+      status: true,
+      result: video_result
+        .flat()
+        .sort((a, b) => b.videos_created_at - a.videos_created_at),
+    });
+    logger.infoWithObject(
+      "Trend videos successfully",
+      video_result
+        .flat()
+        .sort((a, b) => b.videos_created_at - a.videos_created_at)
+    );
+    prepare_audit(
+      audit_action.TREND_VIDEOS,
+      200,
+      video_result
+        .flat()
+        .sort((a, b) => b.videos_created_at - a.videos_created_at),
+      null,
+      "postman",
+      currentDate()
+    );
+  } catch (err) {
+    next(err);
+    logger.errorWithObject(err.name || "Error sub videos", err);
+    prepare_audit(
+      audit_action.SUB_VIDEOS,
+      err.HttpStatusCode ?? 500,
+      null,
+      err,
+      "postman",
+      currentDate()
+    );
+  }
+};

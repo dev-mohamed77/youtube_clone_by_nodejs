@@ -62,9 +62,9 @@ export const register_controller = async (
 
     res.status(200).json({
       status: true,
-      result: create_user,
+      result: "User has been added successfully",
     });
-    logger.infoWithObject("User created successfully", create_user);
+    logger.infoWithObject("User has been added successfully", create_user);
     prepare_audit(
       audit_action.USER_REGISTER,
       200,

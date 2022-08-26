@@ -64,14 +64,14 @@ class UserModel implements UserModelStore<IUser> {
   }
   async update_user_by_id(id: string, user: IUser): Promise<IUser> {
     try {
-      const query = db_queries.UPDATE_USER;
-      const values = [
-        user.fullname,
-        user.image_url,
-        user.gender,
-        currentDate(),
-        id,
-      ];
+      const query =
+        user.image_url != null
+          ? db_queries.UPDATE_USER_WITH_IMAGE
+          : db_queries.UPDATE_USER;
+      const values =
+        user.image_url != null
+          ? [user.fullname, user.image_url, user.gender, currentDate(), id]
+          : [user.fullname, user.gender, currentDate(), id];
       const result = await db_connection<IUser>(query, values);
       return result.rows[0];
     } catch (err) {

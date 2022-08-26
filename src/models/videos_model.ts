@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import db_connection from "../config/db.config/connection";
 import db_queries from "../config/db.config/queries";
 import { ApiError } from "../services/error_handler";
@@ -15,6 +16,7 @@ export class VideosModel implements VideosModelStore<Videos> {
         params.description,
         params.url,
         params.image_url,
+        params.duration,
         params.created_at,
       ];
       const result = await db_connection<Videos>(query, values);
@@ -29,10 +31,11 @@ export class VideosModel implements VideosModelStore<Videos> {
     }
   }
 
-  async get_videos(): Promise<any[]> {
+  async get_videos(limit: number, pages: number): Promise<any[]> {
     try {
       const query = db_queries.GET_VIDEOS;
-      const result = await db_connection(query);
+      const values = [limit, pages];
+      const result = await db_connection(query, values);
 
       return result.rows;
     } catch (err) {
@@ -45,10 +48,11 @@ export class VideosModel implements VideosModelStore<Videos> {
     }
   }
 
-  async get_all_videos_random(): Promise<any[]> {
+  async get_all_videos_random(limit: number, pages: number): Promise<any[]> {
     try {
       const query = db_queries.GET_VIDEOS_RANDOM;
-      const result = await db_connection<any[]>(query);
+      const values = [limit, pages];
+      const result = await db_connection<any[]>(query, values);
       return result.rows;
     } catch (err) {
       const message = "Error get all videos by random";
@@ -124,11 +128,11 @@ export class VideosModel implements VideosModelStore<Videos> {
     }
   }
 
-  async trend(): Promise<any[]> {
+  async trend(limit: number, pages: number): Promise<any[]> {
     try {
       const query = db_queries.TREND_VIDEOS;
-
-      const result = await db_connection(query);
+      const values = [limit, pages];
+      const result = await db_connection(query, values);
 
       return result.rows;
     } catch (err) {
@@ -141,7 +145,20 @@ export class VideosModel implements VideosModelStore<Videos> {
     }
   }
 
-  async sub(): Promise<Videos> {
-    throw new Error("Method not implemented.");
+  async sub(user_id: string): Promise<any[]> {
+    try {
+      const query = db_queries.SUB_VIDEOS;
+      const values = [user_id];
+      const result = await db_connection(query, values);
+
+      return result.rows;
+    } catch (err) {
+      const message = "Error sub videos";
+      throw new ApiError(
+        message,
+        HttpStatusCode.BAD_REQUEST,
+        `${message} = ${err.message}`
+      );
+    }
   }
 }

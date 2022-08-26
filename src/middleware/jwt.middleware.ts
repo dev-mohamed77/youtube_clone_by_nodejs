@@ -16,7 +16,7 @@ export const user_valid = (req: Request, res: Response, next: NextFunction) => {
       }
     });
   } else {
-    res.status(400).json({
+    res.status(401).json({
       status: false,
       result: "You are not authenticated",
     });

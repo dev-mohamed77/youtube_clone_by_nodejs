@@ -23,5 +23,3 @@ export const password_validator = (password: string) => {
 
   return schema.validate(password);
 };
-
-console.log(password_validator("123465"));

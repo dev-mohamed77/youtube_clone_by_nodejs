@@ -6,6 +6,7 @@ export type Videos = {
   views?: number;
   url?: string;
   image_url?: string;
+  duration?: string;
   likes?: number;
   desLikes?: number;
   created_at?: Date;
