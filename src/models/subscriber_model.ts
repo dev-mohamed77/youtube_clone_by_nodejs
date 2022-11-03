@@ -60,7 +60,7 @@ export class SubscriberModel implements SubscriberModelStor<subscriber> {
   async get_subscription_status(subscriber: subscriber): Promise<any[]> {
     try {
       const query = db_queries.GET_SUBSCRIPTION;
-      const values = [subscriber.user_to, subscriber.user_from];
+      const values = [subscriber.user_from, subscriber.user_to];
 
       const result = await db_connection(query, values);
       return result.rows;
@@ -81,7 +81,7 @@ export class SubscriberModel implements SubscriberModelStor<subscriber> {
   ): Promise<any[]> {
     try {
       const queries =
-        limit != null || page != null
+        limit != null && page != null
           ? db_queries.GET_SUBSCRIPTION_WITH_ID_LIMIT
           : db_queries.GET_SUBSCRIPTION_WITH_ID_ALL;
       const value =

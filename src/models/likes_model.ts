@@ -39,16 +39,36 @@ export class LikeModel implements LikeModelStor<Like> {
       );
     }
   }
-  async get_likes_in_video(video_id: string): Promise<any[]> {
+  async get_count_likes_in_video(video_id: string): Promise<any> {
     try {
       const query = db_queries.GET_LIKES_IN_VIDEOS;
       const values = [video_id];
 
       const result = await db_connection(query, values);
 
-      return result.rows;
+      return result.rows[0];
     } catch (err) {
       const message = `Error get like in video`;
+      throw new ApiError(
+        message,
+        HttpStatusCode.BAD_REQUEST,
+        `${message} || ${err}`
+      );
+    }
+  }
+  async check_if_the_user_liked_the_video(
+    user_id: string,
+    video_id: string
+  ): Promise<any[]> {
+    try {
+      const query = db_queries.GET_LIKE_BY_USER_ID_AND_VIDEO_ID;
+      const values = [user_id, video_id];
+
+      const result = await db_connection(query, values);
+
+      return result.rows;
+    } catch (err) {
+      const message = `Error check if the user liked the video`;
       throw new ApiError(
         message,
         HttpStatusCode.BAD_REQUEST,

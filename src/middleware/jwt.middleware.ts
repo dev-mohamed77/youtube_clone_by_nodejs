@@ -9,7 +9,7 @@ export const user_valid = (req: Request, res: Response, next: NextFunction) => {
 
     jwt.verify(token, config.jwt_secret as string, (err, user) => {
       if (err) {
-        res.status(200).json({ status: false, result: "Token is valid" });
+        res.status(401).json({ status: false, result: "Token is valid" });
       } else {
         req.body.user = user;
         next();
@@ -24,5 +24,5 @@ export const user_valid = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const jwt_sign = (payload: object) => {
-  return jwt.sign(payload, config.jwt_secret as string, { expiresIn: "3d" });
+  return jwt.sign(payload, config.jwt_secret as string, { expiresIn: "10d" });
 };

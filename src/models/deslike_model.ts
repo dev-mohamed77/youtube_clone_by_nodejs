@@ -41,16 +41,36 @@ export class DesLikeModel implements DesLikeModelStor<DesLike> {
       );
     }
   }
-  async get_desLikes_in_video(video_id: string): Promise<any[]> {
+  async get_count_desLikes_in_video(video_id: string): Promise<any> {
     try {
       const query = db_queries.GET_DESLIKE_IN_VIDEO;
       const values = [video_id];
 
       const result = await db_connection(query, values);
 
-      return result.rows;
+      return result.rows[0];
     } catch (err) {
       const message = `Error get desLike in video`;
+      throw new ApiError(
+        message,
+        HttpStatusCode.BAD_REQUEST,
+        `${message} || ${err}`
+      );
+    }
+  }
+  async check_if_the_user_desLiked_the_video(
+    user_id: string,
+    video_id: string
+  ): Promise<any[]> {
+    try {
+      const query = db_queries.GET_DESLIKE_BY_USER_ID_AND_VIDEO_ID;
+      const values = [user_id, video_id];
+
+      const result = await db_connection(query, values);
+
+      return result.rows;
+    } catch (err) {
+      const message = `Error check if the user desLiked the video`;
       throw new ApiError(
         message,
         HttpStatusCode.BAD_REQUEST,

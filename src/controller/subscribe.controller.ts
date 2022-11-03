@@ -11,72 +11,100 @@ const logger = new Logger("subscriber_controller");
 
 const subscriber = new SubscriberModel();
 
-export const add_subscribe_and_unsubscribe = async (
+export const add_subscribe = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const user_from = req.body.user_from;
+  const user_to = req.body.user_to;
+  console.log(user_to);
+  console.log(req.body.user.id);
 
   try {
-    if (!user_from) {
-      const message = "user_from is required";
+    if (!user_to) {
+      const message = "user_to is required";
       throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
     }
 
-    if (req.body.user.id === user_from) {
+    if (req.body.user.id === user_to) {
       const message = "You cannot subscribe for yourself";
       throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
     } else {
-      const get_subscription_status = await subscriber.get_subscription_status({
-        user_to: req.body.user.id,
-        user_from: user_from,
+      await subscriber.add_subscribe({
+        user_to: user_to,
+        user_from: req.body.user.id,
+        created_at: currentDate(),
       });
 
-      if (!get_subscription_status.length) {
-        const add_subscribe = await subscriber.add_subscribe({
-          user_to: req.body.user.id,
-          user_from: user_from,
-          created_at: currentDate(),
-        });
-
-        res.status(200).json({
-          status: true,
-          result: "Add subscribe successfully",
-        });
-        logger.infoWithObject("Add subscribe successfully", add_subscribe);
-        prepare_audit(
-          audit_action.ADD_SUBSCRIBE_AND_UNSUBSCRIBE,
-          200,
-          add_subscribe,
-          null,
-          "postman",
-          currentDate()
-        );
-      } else {
-        const delete_subscribe = await subscriber.unsubscribe({
-          user_to: req.body.user.id,
-          user_from: user_from,
-        });
-
-        res.status(200).json({
-          status: true,
-          result: "Unsubscribe successfully",
-        });
-        logger.infoWithObject("Unsubscribe successfully", delete_subscribe);
-        prepare_audit(
-          audit_action.ADD_SUBSCRIBE_AND_UNSUBSCRIBE,
-          200,
-          delete_subscribe,
-          null,
-          "postman",
-          currentDate()
-        );
-      }
+      res.status(200).json({
+        status: true,
+        result: true,
+        message: "Add subscribe successfully",
+      });
+      logger.infoWithObject("Add subscribe successfully", add_subscribe);
+      prepare_audit(
+        audit_action.ADD_SUBSCRIBE_AND_UNSUBSCRIBE,
+        200,
+        add_subscribe,
+        null,
+        "postman",
+        currentDate()
+      );
     }
   } catch (err) {
     next(err);
     logger.errorWithObject(err.name || "Error add subscribe", err);
+    prepare_audit(
+      audit_action.ADD_SUBSCRIBE_AND_UNSUBSCRIBE,
+      HttpStatusCode.BAD_REQUEST || 500,
+      null,
+      err,
+      "postman",
+      currentDate()
+    );
+  }
+};
+
+export const unsubscribe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user_to = req.body.user_to;
+
+  try {
+    if (!user_to) {
+      const message = "user_to is required";
+      throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
+    }
+
+    if (req.body.user.id === user_to) {
+      const message = "You cannot unsubscribe for yourself";
+      throw new ApiError(message, HttpStatusCode.BAD_REQUEST, message);
+    } else {
+      const delete_subscribe = await subscriber.unsubscribe({
+        user_to: user_to,
+        user_from: req.body.user.id,
+      });
+
+      res.status(200).json({
+        status: true,
+        result: false,
+        message: "Unsubscribe successfully",
+      });
+      logger.infoWithObject("Unsubscribe successfully", delete_subscribe);
+      prepare_audit(
+        audit_action.ADD_SUBSCRIBE_AND_UNSUBSCRIBE,
+        200,
+        delete_subscribe,
+        null,
+        "postman",
+        currentDate()
+      );
+    }
+  } catch (err) {
+    next(err);
+    logger.errorWithObject(err.name || "Error delete subscribe", err);
     prepare_audit(
       audit_action.ADD_SUBSCRIBE_AND_UNSUBSCRIBE,
       HttpStatusCode.BAD_REQUEST || 500,
@@ -98,7 +126,7 @@ export const get_subscribers_count = async (
 
     res.status(200).json({
       status: true,
-      result: result,
+      result: result.count,
     });
 
     logger.infoWithObject("Unsubscribe successfully", result.length);
@@ -129,22 +157,28 @@ export const subscribe_status = async (
   res: Response,
   next: NextFunction
 ) => {
-  const user_from = req.body.user_from;
+  const user_id = req.params.user_id;
+  console.log(user_id);
+  console.log(req.body.user.id);
   try {
     const result = await subscriber.get_subscription_status({
-      user_to: req.body.user.id,
-      user_from: user_from,
+      user_to: user_id,
+      user_from: req.body.user.id,
     });
+
+    console.log(result);
 
     if (!result.length) {
       res.status(200).json({
         status: true,
         result: false,
+        message: "you unsubscribe",
       });
     } else {
       res.status(200).json({
         status: true,
         result: true,
+        message: "you subscribe",
       });
     }
   } catch (err) {

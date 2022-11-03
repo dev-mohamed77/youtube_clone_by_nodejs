@@ -27,10 +27,14 @@ export class CommentsModel implements CommentsModelStor<Comments> {
     }
   }
 
-  async get_comments_in_video(video_id: string): Promise<any[]> {
+  async get_comments_by_video_id(
+    video_id: string,
+    limit: number,
+    pages: number
+  ): Promise<any[]> {
     try {
       const query = db_queries.GET_COMMENTS_IN_VIDEO;
-      const value = [video_id];
+      const value = [video_id, limit, pages];
       const result = await db_connection(query, value);
       return result.rows;
     } catch (err) {

@@ -7,6 +7,25 @@ import { HttpStatusCode } from "../utils/enum/http_status_code.enum";
 import { Videos } from "../utils/types/videos.types";
 
 export class VideosModel implements VideosModelStore<Videos> {
+  async get_videos_by_user_id(
+    id: string,
+    limit: number,
+    pages: number
+  ): Promise<any[]> {
+    try {
+      const query = db_queries.GET_VIDEO_BY_USER_ID;
+      const values = [id, limit, pages];
+      const result = await db_connection(query, values);
+      return result.rows;
+    } catch (err) {
+      const message = "Error get videos by user id";
+      throw new ApiError(
+        message,
+        HttpStatusCode.BAD_REQUEST,
+        `${message} = ${err}`
+      );
+    }
+  }
   async create_video(params: Videos): Promise<Videos> {
     try {
       const query = db_queries.ADD_VIDEOS;

@@ -32,7 +32,7 @@ app.use("/uploads", express.static(path.resolve("uploads")));
 app.get("*", async (_req: express.Request, res: express.Response) => {
   res.status(404).json({
     status: false,
-    message: "Page not found",
+    result: "Page not found",
   });
 });
 

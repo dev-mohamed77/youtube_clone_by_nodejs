@@ -28,10 +28,9 @@ export const create_videos = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.body);
   const { title, description } = req.body;
   const video_url =
-    req.file?.path != null ? "http://127.0.0.1:8800/" + req.file?.path : "";
+    req.file?.path != null ? "http://localhost:8800/" + req.file?.path : "";
   const created_at = currentDate();
 
   try {
@@ -87,7 +86,7 @@ export const create_videos = async (
 
     res.status(200).json({
       status: true,
-      result: create_video,
+      result: "Add videos successfully",
     });
 
     logger.infoWithObject("Add videos successfully", create_video);
@@ -100,7 +99,6 @@ export const create_videos = async (
       created_at
     );
   } catch (err) {
-    console.log(err);
     next(err);
     logger.errorWithObject(err.name || "Error add video", err);
     prepare_audit(
@@ -201,6 +199,7 @@ export const get_video_by_id = async (
   res: Response,
   next: NextFunction
 ) => {
+  const user_id = req.query.user_id;
   try {
     const video = await videos.get_video_by_id(req.params.id);
     if (!video.length) {
@@ -208,22 +207,70 @@ export const get_video_by_id = async (
       throw new ApiError(message, HttpStatusCode.NOT_FOUND, message);
     }
 
-    const get_likes = await like_model.get_likes_in_video(req.params.id);
+    const get_likes = await like_model.get_count_likes_in_video(req.params.id);
 
-    const get_desLikes = await desLike_model.get_desLikes_in_video(
+    const get_desLikes = await desLike_model.get_count_desLikes_in_video(
       req.params.id
     );
 
+    let like_status: boolean;
+    let desLike_status: boolean;
+
+    const get_like_status = user_id
+      ? await like_model.check_if_the_user_liked_the_video(
+          user_id as string,
+          req.params.id
+        )
+      : null;
+
+    if (get_like_status != null) {
+      if (get_like_status.length) {
+        like_status = true;
+      } else {
+        like_status = false;
+      }
+    } else {
+      like_status = false;
+    }
+
+    const get_desLike_status = user_id
+      ? await desLike_model.check_if_the_user_desLiked_the_video(
+          user_id as string,
+          req.params.id
+        )
+      : null;
+
+    if (get_desLike_status != null) {
+      if (get_desLike_status.length) {
+        desLike_status = true;
+      } else {
+        desLike_status = false;
+      }
+    } else {
+      desLike_status = false;
+    }
+
+    const user_video = {
+      user_id: video[0].user_video.user_id,
+      user_fullname: video[0].user_video.user_fullname,
+      users_username: video[0].user_video.users_username,
+      users_email: video[0].user_video.users_email,
+      users_image_url: video[0].user_video.users_image_url,
+    };
+
     const result = {
       id: video[0].videos_id,
-      user_id: video[0].videos_user_id,
+      user: user_video,
       title: video[0].videos_title,
       description: video[0].videos_description,
       views: video[0].videos_views,
       url: video[0].videos_url,
       image_url: video[0].videos_image_url,
-      likes: get_likes,
-      deslike: get_desLikes,
+      duration: video[0].duration,
+      likes: get_likes.count,
+      desLike: get_desLikes.count,
+      like_status: like_status,
+      desLike_status: desLike_status,
       created_at: video[0].videos_created_at,
       updated_at: video[0].videos_update_at,
     };
@@ -262,8 +309,9 @@ export const update_video_by_id = async (
   res: Response,
   next: NextFunction
 ) => {
+  const id = req.params.id;
   try {
-    const get_video = await videos.get_video_by_id(req.params.id);
+    const get_video = await videos.get_video_by_id(id);
     if (!get_video.length) {
       const message = "this video is not exist";
       throw new ApiError(message, HttpStatusCode.NOT_FOUND, message);
@@ -274,7 +322,7 @@ export const update_video_by_id = async (
 
       const update_at = currentDate();
 
-      const video = await videos.update_video_by_id(req.params.id, {
+      const video = await videos.update_video_by_id(id, {
         title: title,
         description: description,
         update_at: update_at,
@@ -282,7 +330,7 @@ export const update_video_by_id = async (
 
       res.status(200).json({
         status: true,
-        result: video,
+        result: "update video by id successfully",
       });
 
       logger.infoWithObject("update video by id successfully", video);
@@ -331,7 +379,7 @@ export const delete_video_by_id = async (
 
       res.status(200).json({
         status: true,
-        result: "Delete videos successfully",
+        result: "Delete video successfully",
       });
 
       logger.infoWithObject("update video by id successfully", video);
